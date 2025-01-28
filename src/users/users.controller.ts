@@ -1,7 +1,21 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Post, Put, Query, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Request,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { UpdatePasswordDto } from './dto/UpdatePasswordDto';
 import { UsersService } from './users.service';
+import { CustomError } from './errors/UserErrors';
+import { isUUID } from 'class-validator';
 
 @Controller('user')
 export class UsersController {
@@ -14,8 +28,15 @@ export class UsersController {
   }
 
   @Get(':id')
-  getUser(): string {
-    return 'One user';
+  getUser(@Param('id') id: string) {
+    try {
+      return this.userService.getById(id);
+    } catch (err: any) {
+      throw new HttpException({
+        status: err.statusCode,
+        error: err.message,
+      }, err.statusCode);
+    }
   }
 
   @Post()
@@ -31,13 +52,27 @@ export class UsersController {
   }
 
   @Put(':id')
-  async updateUser(@Query('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
-    return this.userService.update(id, updatePasswordDto);
+  async updateUser(@Param('id') id: string, @Body() updatePasswordDto: UpdatePasswordDto) {
+    try {
+      this.userService.update(id, updatePasswordDto);
+    } catch (err) {
+      throw new HttpException({
+        status: err.statusCode,
+        error: err.message,
+      }, err.statusCode);
+    }
   }
 
   @Delete(':id')
-  deleteUser(@Request() req): string {
-    return 'Delete user';
+  deleteUser(@Param('id') id: string) {
+    try {
+      this.userService.delete(id);
+    } catch (err) {
+      throw new HttpException({
+        status: err.statusCode,
+        error: err.message,
+      }, err.statusCode);
+    }
   }
 
 }

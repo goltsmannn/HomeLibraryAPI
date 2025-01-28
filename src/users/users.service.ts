@@ -16,10 +16,21 @@ export class UsersService {
     return plainToInstance(User, this.users);
   }
 
+  getById(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid user ID', 400);
+    }
+    const user = this.users.find(user => user.id === id);
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
+    return plainToInstance(User, user);
+  }
+
   create(user: CreateUserDto) {
     for(const u of this.users) {
       if (u.login === user.login) {
-        throw new Error('User already exists');
+        throw new CustomError('User already exists', 400);
       }
     }
 
@@ -46,5 +57,20 @@ export class UsersService {
     }
 
     user.password = password.newPassword;
+    user.updatedAt = Date.now();
+    user.version++;
   }
+
+  delete(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid user ID', 400);
+    }
+    const user = this.users.find(user => user.id === id);
+    if (!user) {
+      throw new CustomError('User not found', 404);
+    }
+    this.users = this.users.filter(user => user.id !== id);
+  }
+
+
 }
