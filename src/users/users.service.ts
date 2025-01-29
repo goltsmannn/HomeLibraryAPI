@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/CreateUserDto';
 import { UpdatePasswordDto } from './dto/UpdatePasswordDto';
-import { CustomError } from './errors/UserErrors';
+import { CustomError } from '../errors/CustomError';
 import { isUUID } from 'class-validator';
 import 'uuid';
 import { plainToClass, plainToInstance } from 'class-transformer';

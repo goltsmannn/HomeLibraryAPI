@@ -14,8 +14,7 @@ import {
 import { CreateUserDto } from './dto/CreateUserDto';
 import { UpdatePasswordDto } from './dto/UpdatePasswordDto';
 import { UsersService } from './users.service';
-import { CustomError } from './errors/UserErrors';
-import { isUUID } from 'class-validator';
+
 
 @Controller('user')
 export class UsersController {
