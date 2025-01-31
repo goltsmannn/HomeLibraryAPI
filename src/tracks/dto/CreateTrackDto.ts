@@ -7,11 +7,9 @@ export class CreateTrackDto {
   name: string;
 
   @IsString()
-  @IsOptional()
   artistId: string | null;
 
   @IsString()
-  @IsOptional()
   albumId: string | null;
 
   @IsNumber()

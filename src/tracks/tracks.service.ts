@@ -5,11 +5,16 @@ import { isUUID } from 'class-validator';
 import { CreateTrackDto } from './dto/CreateTrackDto';
 import { UpdateTrackDto } from './dto/UpdateTrackDto';
 import { CustomError } from '../errors/CustomError';
+import { Album } from '../albums/entities/Album.entity';
+import { Artist } from '../artists/entities/Artist.entity';
 
 @Injectable()
 export class TracksService {
-  constructor(@Inject("TRACK_DATABASE") private tracks: Map<string, Track>) {}
-
+  constructor(
+    @Inject("TRACK_DATABASE") private tracks: Map<string, Track>,
+    @Inject("ALBUM_DATABASE") private albums: Map<string, Album>,
+    @Inject("ARTIST_DATABASE") private artists: Map<string, Artist>,
+  ) {}
 
   public getAll() {
     return plainToInstance(Track, Array.from(this.tracks.values()));
@@ -30,6 +35,9 @@ export class TracksService {
 
   public create(track: CreateTrackDto) {
     const id = Track.generateId();
+    if (!this.artists.has(track.artistId) || !this.albums.has(track.albumId)) {
+      throw new CustomError("Artist or album not found", 400);
+    }
 
     this.tracks.set(id, {
       id: id,

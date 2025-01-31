@@ -1,18 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Favorites } from './entities/Favorites.entity';
-import { TracksService } from '../tracks/tracks.service';
-import { AlbumsService } from '../albums/albums.service';
-import { ArtistsService } from '../artists/artists.service';
 import { CustomError } from '../errors/CustomError';
 import { Track } from '../tracks/entities/Track.entity';
 import { isUUID } from 'class-validator';
+import { Album } from '../albums/entities/Album.entity';
+import { Artist } from '../artists/entities/Artist.entity';
 
 @Injectable()
 export class FavoritesService {
   constructor(
     @Inject("TRACK_DATABASE") private tracks: Map<string, Track>,
-    @Inject("ALBUM_DATABASE") private albums: Map<string, Track>,
-    @Inject("ARTIST_DATABASE") private artists: Map<string, Track>,
+    @Inject("ALBUM_DATABASE") private albums: Map<string, Album>,
+    @Inject("ARTIST_DATABASE") private artists: Map<string, Artist>,
   ) {}
 
   private Favorites: Favorites = {
@@ -113,8 +112,5 @@ export class FavoritesService {
     }
     this.Favorites.artists = this.Favorites.artists.filter((artist) => artist !== id);
   }
-
-
-
 
 }

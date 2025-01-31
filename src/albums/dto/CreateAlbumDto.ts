@@ -1,5 +1,4 @@
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { v4 as uuidv4 } from 'uuid';
 
 export class CreateAlbumDto {
 
@@ -10,8 +9,7 @@ export class CreateAlbumDto {
   @IsInt()
   year: number;
 
-  @IsOptional()
   @IsString()
-  artistId: string | null; // refers to Artist
+  artistId: string; // refers to Artist
 
 }
