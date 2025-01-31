@@ -1,16 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Favorites } from './entities/Favorites.entity';
 import { TracksService } from '../tracks/tracks.service';
 import { AlbumsService } from '../albums/albums.service';
 import { ArtistsService } from '../artists/artists.service';
 import { CustomError } from '../errors/CustomError';
+import { Track } from '../tracks/entities/Track.entity';
+import { isUUID } from 'class-validator';
 
 @Injectable()
 export class FavoritesService {
   constructor(
-    private trackService: TracksService,
-    private albumService: AlbumsService,
-    private artistService: ArtistsService,
+    @Inject("TRACK_DATABASE") private tracks: Map<string, Track>,
+    @Inject("ALBUM_DATABASE") private albums: Map<string, Track>,
+    @Inject("ARTIST_DATABASE") private artists: Map<string, Track>,
   ) {}
 
   private Favorites: Favorites = {
@@ -28,43 +30,91 @@ export class FavoritesService {
   }
 
   public getArtists() {
-    let response = [];
-    // for (const artist of this.artistService.getAll()) {
-    //   if (artist.id in this.Favorites.artists) {
-    //     response.push(artist);
-    //   }
-    // }
-    return response;
+    return Array.from(this.Favorites.artists.map((id) => this.artists.get(id)));
+
   }
 
   public getAlbums() {
-    let response = [];
-    for (const album of this.albumService.getAll()) {
-      if (album.id in this.Favorites.albums) {
-        response.push(album);
-      }
-    }
-    return response;
+    return Array.from(this.Favorites.albums.map((id) => this.albums.get(id)));
   }
 
   public getTracks() {
-    let response = [];
-    for (const track of this.trackService.getAll()) {
-      if (track.id in this.Favorites.tracks) {
-        response.push(track);
-      }
-    }
-    return response;
+    return Array.from(this.Favorites.tracks.map((id) => this.tracks.get(id)));
   }
 
   public addTrack(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid UUID', 400);
+    }
     if (this.Favorites.tracks.includes(id)) {
       throw new CustomError('Track already in favorites', 400);
     }
-
-    const track = this.trackService.getById(id);
-    this.Favorites.tracks.push(track.id);
+    if (this.tracks.has(id)) {
+      this.Favorites.tracks.push(id);
+      return;
+    }
+    throw new CustomError('Track not found', 422);
   }
+
+  public addAlbum(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid UUID', 400);
+    }
+    if (this.Favorites.albums.includes(id)) {
+      throw new CustomError('Album already in favorites', 400);
+    }
+    if (this.albums.has(id)) {
+      this.Favorites.albums.push(id);
+      return;
+    }
+    throw new CustomError('Album not found', 422);
+  }
+
+  public addArtist(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid UUID', 400);
+    }
+    if (this.Favorites.artists.includes(id)) {
+      throw new CustomError('Artist already in favorites', 400);
+    }
+    if (this.artists.has(id)) {
+      this.Favorites.artists.push(id);
+      return;
+    }
+    throw new CustomError('Artist not found', 422);
+  }
+
+  public removeTrack(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid UUID', 400);
+    }
+    if (!this.Favorites.tracks.includes(id)) {
+      throw new CustomError('Track not in favorites', 404);
+    }
+    this.Favorites.tracks = this.Favorites.tracks.filter((track) => track !== id);
+  }
+
+  public removeAlbum(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid UUID', 400);
+    }
+    if (!this.Favorites.albums.includes(id)) {
+      throw new CustomError('Album not in favorites', 404);
+    }
+    this.Favorites.albums = this.Favorites.albums.filter((album) => album !== id);
+  }
+
+  public removeArtist(id: string) {
+    if(!isUUID(id)) {
+      throw new CustomError('Invalid UUID', 400);
+    }
+    if (!this.Favorites.artists.includes(id)) {
+      throw new CustomError('Artist not in favorites', 404);
+    }
+    this.Favorites.artists = this.Favorites.artists.filter((artist) => artist !== id);
+  }
+
+
 
 
 }

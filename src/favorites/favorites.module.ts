@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
-import { FavoritesService } from './favorites.service';
 import { FavoritesController } from './favorites.controller';
-import { TracksService } from '../tracks/tracks.service';
-import { AlbumsService } from '../albums/albums.service';
-import { ArtistsService } from '../artists/artists.service';
+import { DatabaseModule } from '../database/database.module';
+import { FavoritesService } from './favorites.service';
 
 @Module({
-  providers: [FavoritesService, TracksService, AlbumsService, ArtistsService],
+  imports: [DatabaseModule],
+  providers: [FavoritesService],
   controllers: [FavoritesController]
 })
 export class FavoritesModule {}
