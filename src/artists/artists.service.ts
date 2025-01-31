@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Artist } from './entities/Artist.entity';
 import { plainToInstance } from 'class-transformer';
 import { isUUID } from 'class-validator';
@@ -8,27 +8,28 @@ import { CustomError } from '../errors/CustomError';
 
 @Injectable()
 export class ArtistsService {
-  private artists: Artist[] = [];
+
+  constructor(@Inject("ARTIST_DATABASE") private artists: Map<string, Artist>) {}
 
   public getAll() {
-    return plainToInstance(Artist, this.artists);
+    return plainToInstance(Artist, Array.from(this.artists.values()));
   }
 
   public getById(id: string) {
     if (!isUUID(id)) {
       throw new CustomError("Invalid artist ID", 400);
     }
-    const artist = this.artists.find(artist => artist.id === id);
+    const artist = this.artists.get(id);
     if (!artist) {
       throw new CustomError("Artist not found", 404);
     }
-
     return plainToInstance(Artist, artist);
   }
 
   public create(artist: CreateArtistDto) {
-    this.artists.push({
-      id: Artist.generateId(),
+    const id = Artist.generateId();
+    this.artists.set(id,{
+      id: id,
       name: artist.name,
       grammy: artist.grammy,
     });
@@ -38,7 +39,7 @@ export class ArtistsService {
     if (!isUUID(id)) {
       throw new CustomError("Invalid artist ID", 400);
     }
-    const artist = this.artists.find(artist => artist.id === id);
+    const artist = this.artists.get(id);
     if (!artist) {
       throw new CustomError("Artist not found", 404);
     }
@@ -50,10 +51,9 @@ export class ArtistsService {
     if (!isUUID(id)) {
       throw new CustomError("Invalid artist ID", 400);
     }
-    const artistIndex = this.artists.findIndex(artist => artist.id === id);
-    if (artistIndex === -1) {
+    const removed = this.artists.delete(id);
+    if (!removed) {
       throw new CustomError("Artist not found", 404);
     }
-    this.artists.splice(artistIndex, 1);
   }
 }

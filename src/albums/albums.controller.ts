@@ -2,7 +2,7 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
+  Get, HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -67,6 +67,7 @@ export class AlbumsController {
     }
   }
 
+  @HttpCode(204)
   @Delete(':id')
   deleteAlbum(@Param('id') id: string) {
     try {

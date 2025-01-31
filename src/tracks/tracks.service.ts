@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Track } from './entities/Track.entity';
 import { plainToInstance } from 'class-transformer';
 import { isUUID } from 'class-validator';
@@ -8,10 +8,11 @@ import { CustomError } from '../errors/CustomError';
 
 @Injectable()
 export class TracksService {
-  private tracks: Track[] = [];
+  constructor(@Inject("TRACK_DATABASE") private tracks: Map<string, Track>) {}
+
 
   public getAll() {
-    return plainToInstance(Track, this.tracks);
+    return plainToInstance(Track, Array.from(this.tracks.values()));
   }
 
   public getById(id: string) {
@@ -19,7 +20,7 @@ export class TracksService {
     if(!isUUID(id)) {
       throw new CustomError("Invalid track ID", 400);
     }
-    const track = this.tracks.find(track => track.id === id);
+    const track = this.tracks.get(id);
     if (!track) {
       throw new CustomError("Track not found", 404);
     }
@@ -28,8 +29,10 @@ export class TracksService {
   }
 
   public create(track: CreateTrackDto) {
-    this.tracks.push({
-      id: Track.generateId(),
+    const id = Track.generateId();
+
+    this.tracks.set(id, {
+      id: id,
       name: track.name,
       artistId: track.artistId,
       albumId: track.albumId,
@@ -41,7 +44,7 @@ export class TracksService {
     if (isUUID(updateTrackDto['id'])) {
       throw new CustomError("Invalid track ID", 400);
     }
-    const track = this.tracks.find(track => track.id === id);
+    const track = this.tracks.get(id);
     if(!track) {
       throw new CustomError("Track not found", 404);
     }
@@ -53,10 +56,9 @@ export class TracksService {
     if(!isUUID(id)) {
       throw new CustomError("Invalid track ID", 400);
     }
-    const trackIndex = this.tracks.findIndex(track => track.id === id);
-    if(trackIndex === -1) {
+    const removed = this.tracks.delete(id);
+    if(!removed) {
       throw new CustomError("Track not found", 404);
     }
-    this.tracks.splice(trackIndex, 1);
   }
 }

@@ -1,12 +1,8 @@
-import {v4 as uuidv4} from 'uuid';
+import { Model } from '../../database/Model';
 
-export class Album {
-  id: string; // uuid v4
+export class Album extends Model{
   name: string;
   year: number;
   artistId: string | null; // refers to Artist
 
-  public static generateId(): string {
-    return uuidv4();
-  }
 }

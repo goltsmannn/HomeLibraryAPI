@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Album } from './entities/album.entity';
 import { CreateAlbumDto } from './dto/CreateAlbumDto';
 import { UpdateAlbumDto } from './dto/UpdateAlbumDto';
@@ -8,17 +8,17 @@ import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class AlbumsService {
-  private albums: Album[] = [];
 
+  constructor(@Inject("ALBUM_DATABASE") private albums: Map<string, Album>) {}
   getAll() {
-    return plainToInstance(Album, this.albums);
+    return plainToInstance(Album, Array.from(this.albums.values()));
   }
 
   getById(id: string) {
     if (!isUUID(id)) {
       throw new CustomError('Invalid album ID', 400);
     }
-    const album = this.albums.find(album => album.id === id);
+    const album = this.albums.get(id);
     if (!album) {
       throw new CustomError('Album not found', 404);
     }
@@ -26,8 +26,9 @@ export class AlbumsService {
   }
 
   create(album: CreateAlbumDto) {
-    this.albums.push({
-      id: Album.generateId(),
+    const id = Album.generateId();
+    this.albums.set(id, {
+      id: id,
       name: album.name,
       artistId: album.artistId,
       year: album.year,
@@ -38,7 +39,7 @@ export class AlbumsService {
     if (!isUUID(id)) {
       throw new CustomError('Invalid album ID', 400);
     }
-    const album = this.albums.find(album => album.id === id);
+    const album = this.albums.get(id);
     if (!album) {
       throw new CustomError('Album not found', 404);
     }
@@ -51,10 +52,9 @@ export class AlbumsService {
     if (!isUUID(id)) {
       throw new CustomError('Invalid album ID', 400);
     }
-    const album = this.albums.find(album => album.id === id);
-    if (!album) {
+    const removed = this.albums.delete(id);
+    if (!removed) {
       throw new CustomError('Album not found', 404);
     }
-    this.albums = this.albums.filter(album => album.id !== id);
   }
 }

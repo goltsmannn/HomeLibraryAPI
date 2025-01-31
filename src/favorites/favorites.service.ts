@@ -29,11 +29,11 @@ export class FavoritesService {
 
   public getArtists() {
     let response = [];
-    for (const artist of this.artistService.getAll()) {
-      if (artist.id in this.Favorites.artists) {
-        response.push(artist);
-      }
-    }
+    // for (const artist of this.artistService.getAll()) {
+    //   if (artist.id in this.Favorites.artists) {
+    //     response.push(artist);
+    //   }
+    // }
     return response;
   }
 
