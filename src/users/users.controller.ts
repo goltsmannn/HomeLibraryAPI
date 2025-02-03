@@ -22,8 +22,9 @@ export class UsersController {
   constructor(private userService: UsersService) {}
 
   @Get()
-  getUsers() {
-    return this.userService.getAll();
+  async getUsers() {
+    this.userService.getAll()
+      .then((users) => {return users;});
   }
 
   @Get(':id')

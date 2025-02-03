@@ -5,72 +5,88 @@ import { UpdatePasswordDto } from './dto/UpdatePasswordDto';
 import { CustomError } from '../errors/CustomError';
 import { isUUID } from 'class-validator';
 import 'uuid';
-import { plainToClass, plainToInstance } from 'class-transformer';
-
+import { PrismaClient } from '@prisma/client';
+import prisma from '../../singleton';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
+  private static prisma: PrismaClient = prisma;
 
-  getAll() {
-    return plainToInstance(User, this.users);
+  async getAll() {
+    const users= await UsersService.prisma.user.findMany({
+      select: {
+        id: true,
+        login: true,
+        createdAt: true,
+        updatedAt: true,
+        version: true
+      },
+    });
+    return users;
   }
 
-  getById(id: string) {
-    if(!isUUID(id)) {
+  async getById(id: string) {
+    if (!isUUID(id)) {
       throw new CustomError('Invalid user ID', 400);
     }
-    const user = this.users.find(user => user.id === id);
-    if (!user) {
+    const user = await UsersService.prisma.user.findUnique({
+      where: { id: id },
+      select: {password: false},
+    });
+
+    if (user == null) {
       throw new CustomError('User not found', 404);
     }
-    return plainToInstance(User, user);
+    return user;
   }
 
-  create(user: CreateUserDto) {
-    for(const u of this.users) {
-      if (u.login === user.login) {
-        throw new CustomError('User already exists', 400);
-      }
-    }
-
-    this.users.push({
-      id: User.generateId(),
-      login: user.login,
-      password: user.password,
-      version: 1,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+  async create(user: CreateUserDto) {
+    await UsersService.prisma.user.upsert({
+      update: {},
+      create: {
+        id: User.generateId(),
+        login: user.login,
+        password: user.password,
+        version: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      where: { login: user.login },
     });
   }
 
-  update(id: string, password: UpdatePasswordDto) {
-    if(!isUUID(id)) {
+  async update(id: string, password: UpdatePasswordDto) {
+    if (!isUUID(id)) {
       throw new CustomError('Invalid user ID', 400);
     }
-    const user = this.users.find(user => user.id === id);
+    const user = await UsersService.prisma.user.update({
+      data: {
+        password: password.newPassword,
+        updatedAt: new Date(),
+        version: {
+          increment: 1,
+        },
+      },
+      where: {
+        id: id,
+        password: password.oldPassword
+      }
+    });
+    if (!user) {
+      throw new CustomError('User with given credentials not found', 404);
+    }
+    return user;
+  }
+
+  async delete(id: string) {
+    if (!isUUID(id)) {
+      throw new CustomError('Invalid user ID', 400);
+    }
+    const user = await UsersService.prisma.user.delete({
+      where: { id: id },
+    });
     if (!user) {
       throw new CustomError('User not found', 404);
     }
-    if(user.password !== password.oldPassword) {
-      throw new CustomError('Invalid password', 403);
-    }
-
-    user.password = password.newPassword;
-    user.updatedAt = Date.now();
-    user.version++;
   }
-
-  delete(id: string) {
-    if(!isUUID(id)) {
-      throw new CustomError('Invalid user ID', 400);
-    }
-    const user = this.users.find(user => user.id === id);
-    if (!user) {
-      throw new CustomError('User not found', 404);
-    }
-    this.users = this.users.filter(user => user.id !== id);
-  }
-
-
 }
