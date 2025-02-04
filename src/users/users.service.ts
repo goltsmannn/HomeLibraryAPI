@@ -13,7 +13,7 @@ export class UsersService {
   private static prisma: PrismaClient = prisma;
 
   async getAll() {
-    const users= await UsersService.prisma.user.findMany({
+    return UsersService.prisma.user.findMany({
       select: {
         id: true,
         login: true,
@@ -22,7 +22,6 @@ export class UsersService {
         version: true
       },
     });
-    return users;
   }
 
   async getById(id: string) {
@@ -31,8 +30,13 @@ export class UsersService {
     }
     const user = await UsersService.prisma.user.findUnique({
       where: { id: id },
-      select: {password: false},
-    });
+      select: {
+        id: true,
+        login: true,
+        createdAt: true,
+        updatedAt: true,
+        version: true
+      },    });
 
     if (user == null) {
       throw new CustomError('User not found', 404);
@@ -41,7 +45,7 @@ export class UsersService {
   }
 
   async create(user: CreateUserDto) {
-    await UsersService.prisma.user.upsert({
+    return UsersService.prisma.user.upsert({
       update: {},
       create: {
         id: User.generateId(),
@@ -59,6 +63,7 @@ export class UsersService {
     if (!isUUID(id)) {
       throw new CustomError('Invalid user ID', 400);
     }
+    console.log(password);
     const user = await UsersService.prisma.user.update({
       data: {
         password: password.newPassword,
