@@ -10,13 +10,13 @@ export class TracksController {
 
   @Get()
   public async getAll() {
-    return this.trackService.getAll();
+    return await this.trackService.getAll();
   }
 
   @Get(':id')
   public async getById(@Param('id') id: string) {
     try {
-      return  this.trackService.getById(id);
+      return await this.trackService.getById(id);
     } catch(err) {
       throw new HttpException(err.message, err.statusCode);
     }
@@ -24,13 +24,13 @@ export class TracksController {
 
   @Post()
   public async create(@Body() createTrackDto: CreateTrackDto) {
-    return this.trackService.create(createTrackDto);
+    return await this.trackService.create(createTrackDto);
   }
 
   @Put(':id')
   public async update(@Param('id') id: string, @Body() updateTrackDto: UpdateTrackDto) {
     try {
-      return this.trackService.update(id, updateTrackDto);
+      return await this.trackService.update(id, updateTrackDto);
     } catch(err) {
       throw new HttpException(err.message, err.statusCode);
     }
@@ -40,7 +40,7 @@ export class TracksController {
   @HttpCode(204)
   public async delete(@Param('id') id: string) {
     try {
-      return this.trackService.delete(id);
+      return await this.trackService.delete(id);
     } catch(err) {
       throw new HttpException(err.message, err.statusCode);
     }

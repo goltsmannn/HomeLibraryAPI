@@ -2,7 +2,8 @@ import {
   Body,
   Controller,
   Delete,
-  Get, HttpCode,
+  Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -18,18 +19,17 @@ export class ArtistsController {
   constructor(private artistsService: ArtistsService) {}
 
   @Get()
-  getArtists() {
-    return this.artistsService.getAll();
+  async getArtists() {
+    return await this.artistsService.getAll();
   }
 
   @Get(':id')
-  getArtist(@Param('id') id: string) {
+  async getArtist(@Param('id') id: string) {
     try {
-      return this.artistsService.getById(id);
+      return await this.artistsService.getById(id);
     } catch (err: any) {
       throw new HttpException(
-        { status: err.statusCode,
-          error: err.message,},
+        { status: err.statusCode, error: err.message },
         err.statusCode,
       );
     }
@@ -38,7 +38,7 @@ export class ArtistsController {
   @Post()
   async createArtist(@Body() createArtistDto: CreateArtistDto) {
     try {
-      return this.artistsService.create(createArtistDto);
+      await this.artistsService.create(createArtistDto);
     } catch (err) {
       throw new HttpException(
         {
@@ -51,9 +51,12 @@ export class ArtistsController {
   }
 
   @Put(':id')
-  async updateArtist(@Param('id') id: string, @Body() updateArtistDto: UpdateArtistDto) {
+  async updateArtist(
+    @Param('id') id: string,
+    @Body() updateArtistDto: UpdateArtistDto,
+  ) {
     try {
-      return this.artistsService.update(id, updateArtistDto);
+      return await this.artistsService.update(id, updateArtistDto);
     } catch (err) {
       throw new HttpException(
         {
@@ -67,17 +70,16 @@ export class ArtistsController {
 
   @HttpCode(204)
   @Delete(':id')
-  deleteArtist(@Param('id') id: string) {
+  async deleteArtist(@Param('id') id: string) {
     try {
-      return this.artistsService.delete(id);
-    } catch (err) {
-      throw new HttpException(
-        {
-          status: err.statusCode || HttpStatus.NOT_FOUND,
-          error: err.message || 'Error deleting artist',
-        },
-        err.statusCode || HttpStatus.NOT_FOUND,
-      );
+      await this.artistsService.delete(id);
+    } catch(err) {
+        throw new HttpException(
+          {
+            status: err.statusCode || HttpStatus.NOT_FOUND,
+            error: err.message || 'Error deleting artist',
+          },
+          err.statusCode || HttpStatus.NOT_FOUND,);
     }
   }
 }

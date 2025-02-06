@@ -1,7 +1,7 @@
 import { CreateTrackDto } from './CreateTrackDto';
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
-export class UpdateTrackDto extends CreateTrackDto {
+export class UpdateTrackDto {
   @IsOptional()
   @IsString()
   name: string;

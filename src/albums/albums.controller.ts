@@ -18,14 +18,14 @@ export class AlbumsController {
   constructor(private albumsService: AlbumsService) {}
 
   @Get()
-  getAlbums() {
-    return this.albumsService.getAll();
+  async getAlbums() {
+    return await this.albumsService.getAll();
   }
 
   @Get(':id')
-  getAlbum(@Param('id') id: string) {
+  async getAlbum(@Param('id') id: string) {
     try {
-      return this.albumsService.getById(id);
+      return await this.albumsService.getById(id);
     } catch (err: any) {
       throw new HttpException(
         {
@@ -40,7 +40,7 @@ export class AlbumsController {
   @Post()
   async createAlbum(@Body() createAlbumDto: CreateAlbumDto) {
     try {
-      return this.albumsService.create(createAlbumDto);
+      return await this.albumsService.create(createAlbumDto);
     } catch (err) {
       throw new HttpException(
         {
@@ -55,7 +55,7 @@ export class AlbumsController {
   @Put(':id')
   async updateAlbum(@Param('id') id: string, @Body() updateAlbumDto: UpdateAlbumDto) {
     try {
-      return this.albumsService.update(id, updateAlbumDto);
+      return await this.albumsService.update(id, updateAlbumDto);
     } catch (err) {
       throw new HttpException(
         {
@@ -69,9 +69,9 @@ export class AlbumsController {
 
   @HttpCode(204)
   @Delete(':id')
-  deleteAlbum(@Param('id') id: string) {
+  async deleteAlbum(@Param('id') id: string) {
     try {
-      return this.albumsService.delete(id);
+      return await this.albumsService.delete(id);
     } catch (err) {
       throw new HttpException(
         {

@@ -5,72 +5,64 @@ import { isUUID } from 'class-validator';
 import { CreateArtistDto } from './dto/CreateArtistDto';
 import { UpdateArtistDto } from './dto/UpdateArtistDto';
 import { CustomError } from '../errors/CustomError';
-import { Track } from '../tracks/entities/Track.entity';
-import { Album } from '../albums/entities/Album.entity';
+import prisma from '../../singleton';
+
 
 @Injectable()
 export class ArtistsService {
 
-  constructor(
-    @Inject("TRACK_DATABASE") private tracks: Map<string, Track>,
-    @Inject("ALBUM_DATABASE") private albums: Map<string, Album>,
-    @Inject("ARTIST_DATABASE") private artists: Map<string, Artist>,
-  ) {}
-
-  public getAll() {
-    return plainToInstance(Artist, Array.from(this.artists.values()));
+  public async getAll() {
+    const artists = await prisma.artist.findMany();
+    return artists;
   }
 
-  public getById(id: string) {
+  public async getById(id: string) {
     if (!isUUID(id)) {
       throw new CustomError("Invalid artist ID", 400);
     }
-    const artist = this.artists.get(id);
+    const artist = await prisma.artist.findUnique({
+      where: {id: id}
+    })
     if (!artist) {
       throw new CustomError("Artist not found", 404);
     }
-    return plainToInstance(Artist, artist);
+    return artist;
   }
 
-  public create(artist: CreateArtistDto) {
+  public async create(artist: CreateArtistDto) {
     const id = Artist.generateId();
-    this.artists.set(id,{
-      id: id,
-      name: artist.name,
-      grammy: artist.grammy,
-    });
+    return await prisma.artist.create({
+      data: {
+        id: id,
+        name: artist.name,
+        grammy: artist.grammy,
+      }
+    })
   }
 
   public update(id: string, updateArtistDto: UpdateArtistDto) {
     if (!isUUID(id)) {
       throw new CustomError("Invalid artist ID", 400);
     }
-    const artist = this.artists.get(id);
-    if (!artist) {
-      throw new CustomError("Artist not found", 404);
-    }
-    Object.assign(artist, updateArtistDto);
+    const artist = prisma.artist.update({
+      data: {
+        ...updateArtistDto
+      },
+      where: { id: id }
+    });
     return artist;
   }
 
-  public delete(id: string) {
+  public async delete(id: string) {
     if (!isUUID(id)) {
       throw new CustomError("Invalid artist ID", 400);
     }
-    const removed = this.artists.delete(id);
-    if (!removed) {
-      throw new CustomError("Artist not found", 404);
-    }
-
-    for(const [key, value] of this.albums) {
-      if (value.artistId === id) {
-        value.artistId = null;
-      }
-    }
-    for(const [key, value] of this.tracks) {
-      if (value.artistId === id) {
-        value.artistId = null;
-      }
-    }
+    prisma.artist.delete({
+      where: { id: id }
+    })
+      .catch( (err) => {
+          throw new CustomError("Artist not found", 404);
+    });
   }
+
 }

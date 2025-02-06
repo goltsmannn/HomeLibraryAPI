@@ -4,7 +4,7 @@ import { ArtistsController } from './artists.controller';
 import { DatabaseModule } from '../database/database.module';
 
 @Module({
-  imports: [DatabaseModule],
+  //imports: [DatabaseModule],
   providers: [ArtistsService],
   controllers: [ArtistsController]
 })

@@ -34,17 +34,17 @@ model Album {
   id       String  @id @default(uuid())
   name     String
   year     Int
-  Artist   Artist  @relation(fields: [artistId], references: [id])
-  artistId String
+  Artist   Artist? @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  artistId String?
   tracks   Track[]
 }
 
 model Track {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   name     String
   duration Int
-  Artist   Artist @relation(fields: [artistId], references: [id])
-  artistId String
-  album    Album  @relation(fields: [albumId], references: [id])
-  albumId  String
+  Artist   Artist? @relation(fields: [artistId], references: [id], onDelete: SetNull)
+  artistId String?
+  album    Album?  @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  albumId  String?
 }

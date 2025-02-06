@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateArtistDto {
   @IsOptional()
@@ -6,6 +6,6 @@ export class UpdateArtistDto {
   name?: string;
 
   @IsOptional()
-  @IsString()
+  @IsBoolean()
   grammy?: boolean;
 }
