@@ -10,10 +10,9 @@ import prisma from '../../singleton';
 
 @Injectable()
 export class UsersService {
-  private static prisma: PrismaClient = prisma;
 
   async getAll() {
-    return UsersService.prisma.user.findMany({
+    return prisma.user.findMany({
       select: {
         id: true,
         login: true,
@@ -28,7 +27,7 @@ export class UsersService {
     if (!isUUID(id)) {
       throw new CustomError('Invalid user ID', 400);
     }
-    const user = await UsersService.prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: id },
       select: {
         id: true,
@@ -45,7 +44,7 @@ export class UsersService {
   }
 
   async create(user: CreateUserDto) {
-    return UsersService.prisma.user.upsert({
+    return prisma.user.upsert({
       update: {},
       create: {
         id: User.generateId(),
@@ -64,7 +63,7 @@ export class UsersService {
       throw new CustomError('Invalid user ID', 400);
     }
     console.log(password);
-    const user = await UsersService.prisma.user.update({
+    const user = await prisma.user.update({
       data: {
         password: password.newPassword,
         updatedAt: new Date(),
@@ -87,7 +86,7 @@ export class UsersService {
     if (!isUUID(id)) {
       throw new CustomError('Invalid user ID', 400);
     }
-    const user = await UsersService.prisma.user.delete({
+    const user = await prisma.user.delete({
       where: { id: id },
     });
     if (!user) {
