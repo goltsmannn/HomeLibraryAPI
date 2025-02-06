@@ -51,63 +51,92 @@ export class FavoritesService {
       }
     })
   }
-  //
-  // public addAlbum(id: string) {
-  //   if(!isUUID(id)) {
-  //     throw new CustomError('Invalid UUID', 400);
-  //   }
-  //   if (this.Favorites.albums.includes(id)) {
-  //     throw new CustomError('Album already in favorites', 400);
-  //   }
-  //   if (this.albums.has(id)) {
-  //     this.Favorites.albums.push(id);
-  //     return;
-  //   }
-  //   throw new CustomError('Album not found', 422);
-  // }
-  //
-  // public addArtist(id: string) {
-  //   if(!isUUID(id)) {
-  //     throw new CustomError('Invalid UUID', 400);
-  //   }
-  //   if (this.Favorites.artists.includes(id)) {
-  //     throw new CustomError('Artist already in favorites', 400);
-  //   }
-  //   if (this.artists.has(id)) {
-  //     this.Favorites.artists.push(id);
-  //     return;
-  //   }
-  //   throw new CustomError('Artist not found', 422);
-  // }
-  //
-  // public removeTrack(id: string) {
-  //   if(!isUUID(id)) {
-  //     throw new CustomError('Invalid UUID', 400);
-  //   }
-  //   if (!this.Favorites.tracks.includes(id)) {
-  //     throw new CustomError('Track not in favorites', 404);
-  //   }
-  //   this.Favorites.tracks = this.Favorites.tracks.filter((track) => track !== id);
-  // }
-  //
-  // public removeAlbum(id: string) {
-  //   if(!isUUID(id)) {
-  //     throw new CustomError('Invalid UUID', 400);
-  //   }
-  //   if (!this.Favorites.albums.includes(id)) {
-  //     throw new CustomError('Album not in favorites', 404);
-  //   }
-  //   this.Favorites.albums = this.Favorites.albums.filter((album) => album !== id);
-  // }
-  //
-  // public removeArtist(id: string) {
-  //   if(!isUUID(id)) {
-  //     throw new CustomError('Invalid UUID', 400);
-  //   }
-  //   if (!this.Favorites.artists.includes(id)) {
-  //     throw new CustomError('Artist not in favorites', 404);
-  //   }
-  //   this.Favorites.artists = this.Favorites.artists.filter((artist) => artist !== id);
-  // }
+
+
+  public async addAlbum(albumId: string, userId: string) {
+    if(!isUUID(albumId) || !isUUID(userId)) {
+      throw new CustomError('Invalid UUID for Album or user', 400);
+    }
+    if (await prisma.favorites_UserAlbum.findUnique({
+      where: {
+        albumId_userId: {userId: userId, albumId: albumId}
+      }
+    }) !== null) {
+      throw new CustomError('Album already in favorites', 400);
+    }
+    if (!prisma.user.findUnique({where: {id: userId}})) {
+      throw new CustomError('User not found', 422);
+    }
+    if (!prisma.album.findUnique({where: {id: albumId}})) {
+      throw new CustomError('Album not found', 422);
+    }
+    return prisma.favorites_UserAlbum.create({
+      data: {
+        albumId: albumId,
+        userId: userId
+      }
+    })
+  }
+
+  public async addArtist(artistId: string, userId: string) {
+    if(!isUUID(artistId) || !isUUID(userId)) {
+      throw new CustomError('Invalid UUID for Artist or user', 400);
+    }
+    if (await prisma.favorites_UserArtist.findUnique({
+      where: {
+        artistId_userId: {userId: userId, artistId: artistId}
+      }
+    }) !== null) {
+      throw new CustomError('Artist already in favorites', 400);
+    }
+    if (!prisma.user.findUnique({where: {id: userId}})) {
+      throw new CustomError('User not found', 422);
+    }
+    if (!prisma.artist.findUnique({where: {id: artistId}})) {
+      throw new CustomError('Artist not found', 422);
+    }
+    return prisma.favorites_UserArtist.create({
+      data: {
+        artistId: artistId,
+        userId: userId
+      }
+    })
+  }
+
+  public async removeTrack(trackId: string, userId: string) {
+    if(!isUUID(trackId) || !isUUID(userId)) {
+      throw new CustomError('Invalid UUID for track or user', 400);
+    }
+
+   await prisma.favorites_UserTrack.delete({
+      where: {
+        trackId_userId: {userId: userId, trackId: trackId}
+      }
+    });
+  }
+
+  public async removeAlbum(albumId: string, userId: string) {
+    if(!isUUID(albumId) || !isUUID(userId)) {
+      throw new CustomError('Invalid UUID for album or user', 400);
+    }
+
+    await prisma.favorites_UserAlbum.delete({
+      where: {
+        albumId_userId: {userId: userId, albumId: albumId}
+      }
+    });
+  }
+
+  public async removeArtist(artistId: string, userId: string) {
+    if(!isUUID(artistId) || !isUUID(userId)) {
+      throw new CustomError('Invalid UUID for artist or user', 400);
+    }
+
+    await prisma.favorites_UserArtist.delete({
+      where: {
+        artistId_userId: {userId: userId, artistId: artistId}
+      }
+    });
+  }
 
 }
