@@ -1,12 +1,36 @@
-version: "3.8"
-
 services:
+
+  postgres:
+    container_name: postgres
+    image: postgres:15
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      start_period: 5s
+      retries: 10
+      timeout: 3s
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5002:4001"
+      - "4001:4001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    command: /bin/bash /start.sh
     volumes:
-      - .:/usr/src/app
-    command: ["npm", "run", "start"]
+      - ./start.sh:/start.sh
+
+volumes:
+  pgdata:
+

@@ -62,7 +62,6 @@ export class UsersService {
     if (!isUUID(id)) {
       throw new CustomError('Invalid user ID', 400);
     }
-    console.log(password);
     const user = await prisma.user.update({
       data: {
         password: password.newPassword,
